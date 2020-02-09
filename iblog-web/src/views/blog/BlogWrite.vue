@@ -49,10 +49,17 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="文章标签" prop="tags">
-            <el-checkbox-group v-model="articleForm.tags">
-              <el-checkbox v-for="t in tags" :key="t.id" :label="t.id" name="tags">{{t.tagName}}</el-checkbox>
+          <el-form-item label="文章标签" prop="tagList">
+            <el-checkbox-group v-model="articleForm.tagList">
+              <el-checkbox v-for="t in tagList" :key="t.tagId" :label="t" name="tagList">{{t.tagName}}</el-checkbox>
             </el-checkbox-group>
+          </el-form-item>
+
+          <el-form-item label="是否公开" prop="isHide">
+            <el-radio-group v-model="articleForm.isHide">
+              <el-radio label="1">公开</el-radio>
+              <el-radio label="2">私密</el-radio>
+            </el-radio-group>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -67,6 +74,8 @@
 <script>
   import MarkdownEditor from '@/components/content/markdown/MarkdownEditor'
   import {getCategory} from '@/network/category'
+  import {getTags} from '@/network/tag'
+  import {addBlog} from '@/network/blog'
 
   export default {
     name: 'BlogWrite',
@@ -77,27 +86,17 @@
       return {
         publishVisible: false,
         categorys: [],
-        tags: [
-          {
-            id: '1',
-            tagName: 'Java'
-          },
-          {
-            id: '2',
-            tagName: 'Python'
-          },
-          {
-            id: '3',
-            tagName: 'Vue'
-          }
-        ],
+        tagList: [],
         articleForm: {
           content: '',
           title: '',
           contentHtml: '',
           category: '',
+          categoryId: '',
+          categoryName: '',
           summary: '',
-          tags: []
+          tagList: [],
+          isHide: '1'
         },
         rules: {
           summary: [
@@ -107,7 +106,7 @@
           category: [
             {required: true, message: '请选择文章分类', trigger: 'change'}
           ],
-          tags: [
+          tagList: [
             {type: 'array', required: true, message: '请选择标签', trigger: 'change'}
           ]
         }
@@ -116,33 +115,37 @@
 
     computed: {},
     mounted() {
-      let that = this
-      let userId = 1
-      getCategory(userId).then(res =>{
-        if (res.code === 200){
-          that.categorys = res.data
-        } else {
-          that.$message.error("分类查询失败");
-        }
-
-      }).catch(err =>{
-        console.log(err);
-      })
-    },
-    created() {
-      console.log("created");
-    },
-    beforeDestroy() {
+      this.getCategoryAndTags();
     },
     methods: {
-      submit() {
-        console.log(this.articleForm);
-      },
       publish(articleForm) {
         let that = this
         this.$refs[articleForm].validate((valid) => {
           if (valid) {
-            console.log(that.articleForm);
+            let articleForm = that.articleForm;
+            let category = articleForm.category;
+            if (typeof (category) == "object") {
+              articleForm.categoryId = category.categoryId;
+              articleForm.categoryName = category.categoryName;
+            }else {
+              articleForm.categoryId = '';
+              articleForm.categoryName = category;
+            }
+            console.log(articleForm);
+            addBlog(articleForm).then(res =>{
+              if (res.code === 200){
+                that.$message.success(res.message);
+                setTimeout(()=>{
+                  that.$router.push('/')
+                },1000)
+              } else {
+                that.$message.error(res.message);
+              }
+            }).catch(err =>{
+              console.log(err);
+            })
+          } else {
+            return false;
           }
         })
       },
@@ -173,6 +176,30 @@
           this.$router.push('/')
         })
       },
+      getCategoryAndTags() {
+        let that = this
+        let userId = 1
+        getCategory(userId).then(res => {
+          if (res.code === 200) {
+            that.categorys = res.data
+          } else {
+            that.$message.error("分类查询失败");
+          }
+
+        }).catch(err => {
+          console.log(err);
+        })
+
+        getTags().then(res => {
+          if (res.code === 200) {
+            that.tagList = res.data
+          } else {
+            that.$message.error("分类查询失败");
+          }
+        }).catch(err => {
+          console.log(err);
+        })
+      }
     }
   }
 </script>
