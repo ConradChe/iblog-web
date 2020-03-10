@@ -21,3 +21,12 @@ export function register(data) {
     data:JSON.stringify(data)
   })
 }
+
+export function logout(userId) {
+  return request({
+    url: '/user/logout',
+    params:{
+      userId
+    }
+  })
+}

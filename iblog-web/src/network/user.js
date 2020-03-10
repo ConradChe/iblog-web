@@ -1,8 +1,8 @@
 import {request} from "./request";
 
-export function addBlog(data) {
+export function updateUser(data) {
   return request({
-    url: '/blog/addBlog',
+    url: '/user/updateUser',
     method: 'post',
     headers:{
       'Content-Type': 'application/json;charset=UTF-8'
@@ -11,10 +11,8 @@ export function addBlog(data) {
   })
 }
 
-export function findBlog(params) {
+export function queryUserInfo() {
   return request({
-    url: '/blog/findBlogs',
-    method: 'get',
-    params
+    url: '/user/queryUserInfo'
   })
 }

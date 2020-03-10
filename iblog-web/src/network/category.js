@@ -1,10 +1,7 @@
 import {request} from "./request";
 
-export function getCategory(userId) {
+export function getCategory() {
   return request({
-    url: '/category/queryCategory',
-    params:{
-      userId
-    }
+    url: '/category/queryCategory'
   })
 }

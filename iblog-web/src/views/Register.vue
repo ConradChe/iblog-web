@@ -30,9 +30,9 @@
       </el-form>
 
       <div class="me-login-design">
-        <p>Designed by
+        <p>已有账号？
           <strong>
-            <router-link to="/" class="me-login-design-color">IBLOG</router-link>
+            <router-link to="/login" class="me-login-design-color">登录</router-link>
           </strong>
         </p>
       </div>
@@ -44,6 +44,7 @@
 <script>
   import {isPoneAvailable} from '@/common/utils'
   import {register} from '@/network/login'
+  import {setToken,getUser} from '@/request/token'
 
   export default {
     name: 'Register',
@@ -99,7 +100,10 @@
           if (valid) {
             register(that.userForm).then(res => {
               if (res.code === 200) {
-                this.$message.success(res.message);
+                //保存token
+                setToken(res.data[0])
+                this.$store.state.user = getUser();
+                this.$router.push('/')
               } else {
                 this.$message.error(res.message);
               }

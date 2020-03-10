@@ -9,7 +9,7 @@
 
       <el-form ref="userForm" :model="userForm" :rules="rules">
         <el-form-item prop="phone">
-          <el-input placeholder="手机号" v-model="userForm.phone"></el-input>
+          <el-input placeholder="手机号" v-model="userForm.phone" maxlength="11"></el-input>
         </el-form-item>
 
         <el-form-item prop="password">
@@ -22,9 +22,9 @@
       </el-form>
 
       <div class="me-login-design">
-        <p>Designed by
+        <p>没有账号？
           <strong>
-            <router-link to="/" class="me-login-design-color">IBLOG</router-link>
+            <router-link to="/register" class="me-login-design-color">注册</router-link>
           </strong>
         </p>
       </div>
@@ -36,16 +36,17 @@
 <script>
   import {isPoneAvailable} from '@/common/utils'
   import {doLogin} from '@/network/login'
+  import {setToken,getUser} from '@/request/token'
 
   export default {
     name: 'Login',
     data() {
       var checkPhone = (rule, value, callback) => {
         if (!value) {
-          return callback(new Error('请输入用户名'));
+          return callback(new Error('请输入手机号'));
         }
         if (!isPoneAvailable(value)) {
-          return callback(new Error('请输入手机号'));
+          return callback(new Error('手机号格式错误'));
         }
         return callback();
       };
@@ -71,7 +72,12 @@
           if (valid) {
             doLogin(this.userForm).then(res =>{
               if (res.code === 200){
-                this.$message.success(res.message);
+                //保存token
+                let data = res.data[0];
+                setToken(data)
+                this.$store.state.user = getUser();
+                //跳转到首页
+                this.$router.push('/')
               } else {
                 this.$message.error(res.message);
               }

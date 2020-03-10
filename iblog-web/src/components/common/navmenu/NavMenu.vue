@@ -10,7 +10,7 @@
       <el-col :span="16" :offset="0">
         <el-menu router :default-active="activeIndex" mode="horizontal"
                  active-text-color="#5FB878">
-          <el-menu-item index="/">首页</el-menu-item>
+          <el-menu-item index="/home">首页</el-menu-item>
           <el-menu-item index="/myfollow">我的关注</el-menu-item>
           <el-menu-item index="/blogmanage">文章管理</el-menu-item>
           <el-col :span="2" :offset="1">
@@ -31,13 +31,22 @@
 
       <el-col :span="4" :offset="0">
         <el-menu router menu-trigger="click" mode="horizontal" active-text-color="#5FB878">
-          <template>
+          <template v-if="!user">
             <el-menu-item index="/login">
               <el-button type="text">登录</el-button>
             </el-menu-item>
             <el-menu-item index="/register">
               <el-button type="text">注册</el-button>
             </el-menu-item>
+          </template>
+          <template v-else>
+            <el-submenu index>
+              <template slot="title">
+                <img class="me-header-picture" :src="user.headImg"/>
+              </template>
+              <el-menu-item index="/settings"><i class="el-icon-setting"></i>账号设置</el-menu-item>
+              <el-menu-item index @click="logout"><i class="el-icon-back"></i>退出</el-menu-item>
+            </el-submenu>
           </template>
         </el-menu>
       </el-col>
@@ -46,11 +55,15 @@
 </template>
 
 <script>
+  import {getUser,removeUser,removeToken} from '@/request/token'
+
+  import {logout} from '@/network/login'
+
   export default {
     name: "NavMenu",
     props: {
       activeIndex: {
-        type:String,
+        type: String,
         default() {
           return ""
         }
@@ -58,14 +71,43 @@
     },
     data() {
       return {
-        input:''
+        input: '',
+        default_avatar: 'http://localhost:8081/iblog/files/20200201/75e31acd-66cb-445b-8b5f-0f60112ded07_20180119173406_431.png'
       }
     },
     methods: {
-      searchBlog(){
+      searchBlog() {
         console.log(this.input);
+      },
+      logout() {
+        let user = getUser();
+        if (!user){
+          this.$message.error("请确保用户存在");
+          return;
+        }
+        logout(user.userId).then(res=>{
+          if (res.code === 200){
+            this.$store.state.user = null
+            removeUser();
+            removeToken();
+            let path = this.$route.path;
+            if (path !== "/home" && path !== "/"){
+              this.$router.push('/')
+            }
+          }
+        })
+      }
+    },
+    computed: {
+      user() {
+        let user = this.$store.state.user;
+        if (user && user.headImg === null) {
+          this.$store.state.user.headImg = this.default_avatar
+        }
+        return user;
       }
     }
+
   }
 </script>
 

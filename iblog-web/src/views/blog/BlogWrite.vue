@@ -112,8 +112,6 @@
         }
       }
     },
-
-    computed: {},
     mounted() {
       this.getCategoryAndTags();
     },
@@ -131,7 +129,6 @@
               articleForm.categoryId = '';
               articleForm.categoryName = category;
             }
-            console.log(articleForm);
             addBlog(articleForm).then(res =>{
               if (res.code === 200){
                 that.$message.success(res.message);
@@ -178,21 +175,20 @@
       },
       getCategoryAndTags() {
         let that = this
-        let userId = 1
-        getCategory(userId).then(res => {
+        //查询分类
+        getCategory().then(res => {
           if (res.code === 200) {
             that.categorys = res.data
-          } else {
-            that.$message.error("分类查询失败");
-          }
-
-        }).catch(err => {
-          console.log(err);
-        })
-
-        getTags().then(res => {
-          if (res.code === 200) {
-            that.tagList = res.data
+            //查询标签
+            getTags().then(res => {
+              if (res.code === 200) {
+                that.tagList = res.data
+              } else {
+                that.$message.error("分类查询失败");
+              }
+            }).catch(err => {
+              console.log(err);
+            })
           } else {
             that.$message.error("分类查询失败");
           }

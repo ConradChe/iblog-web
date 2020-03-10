@@ -2,11 +2,11 @@
   <div id="home">
     <el-container>
 
-      <nav-menu :activeIndex="activeIndex"></nav-menu>
+      <nav-menu :activeIndex="$store.state.activeIndex" v-show="$store.state.baseShow"></nav-menu>
 
       <router-view class="me-container"/>
 
-      <base-footer v-show="footerShow"></base-footer>
+      <base-footer v-show="$store.state.baseShow"></base-footer>
 
     </el-container>
 
@@ -22,27 +22,13 @@
     name: 'Home',
     data() {
       return {
-        activeIndex: '/',
-        footerShow: true
+        // activeIndex: this.$store.state.activeIndex,
+        // baseShow: this.$store.state.baseShow
       }
     },
     components: {
       NavMenu,
       BaseFooter
-    },
-    beforeRouteEnter(to, from, next) {
-      next(vm => {
-        vm.activeIndex = to.path
-      })
-    },
-    beforeRouteUpdate(to, from, next) {
-      if (to.path == '/') {
-        this.footerShow = true
-      } else {
-        this.footerShow = false
-      }
-      this.activeIndex = to.path
-      next()
     }
   }
 </script>
