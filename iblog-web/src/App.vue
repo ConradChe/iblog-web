@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <home></home>
+    <router-view/>
   </div>
 </template>
 
@@ -17,6 +17,7 @@
 </script>
 
 <style>
+
   * {
     margin: 0;
     padding: 0;

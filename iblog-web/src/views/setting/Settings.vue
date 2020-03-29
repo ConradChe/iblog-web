@@ -3,7 +3,7 @@
     <el-row class="tac">
       <el-col :span="6">
         <el-menu
-          default-active="1"
+          :default-active="menuPath"
           class="el-menu-vertical-demo"
           @select="handleSelect">
           <el-menu-item index="1">
@@ -18,7 +18,7 @@
       </el-col>
       <el-col :span="18">
         <div class="from-box">
-          <template>
+          <template v-if="menuPath==='1'">
             <h4>个人资料</h4>
             <el-form ref="form" :model="form" label-width="80px">
               <el-form-item label="头像">
@@ -53,7 +53,23 @@
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" @click="onSubmit">保存</el-button>
-                <el-button>取消</el-button>
+              </el-form-item>
+            </el-form>
+          </template>
+          <template v-else>
+            <h4>修改密码</h4>
+            <el-form ref="passwordForm" :model="passwordForm" label-width="80px">
+              <el-form-item label="旧密码" prop="prePass">
+                <el-input v-model="passwordForm.prePass" style="width: 200px" type="password" placeholder="请输入旧密码"></el-input>
+              </el-form-item>
+              <el-form-item label="新密码" prop="newPass">
+                <el-input v-model="passwordForm.newPass" style="width: 200px" type="password" placeholder="请输入新密码"></el-input>
+              </el-form-item>
+              <el-form-item label="确认密码" prop="rePass">
+                <el-input v-model="passwordForm.rePass" style="width: 200px" type="password" placeholder="请确认密码"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="changePass()">保存</el-button>
               </el-form-item>
             </el-form>
           </template>
@@ -65,8 +81,9 @@
 
 <script>
   import {upload} from '@/network/upload'
-  import {updateUser,queryUserInfo} from '@/network/user'
+  import {updateUser,queryUserInfo,changePass} from '@/network/user'
   import {setUser} from '@/request/token'
+  import {isEmpty} from '@/common/utils'
 
   export default {
     name: "Settings",
@@ -81,10 +98,16 @@
           address: '',
           headImg: 'http://localhost:8081/iblog/files/20200201/75e31acd-66cb-445b-8b5f-0f60112ded07_20180119173406_431.png'
         },
+        passwordForm:{
+          prePass:'',
+          newPass:'',
+          rePass:''
+        },
         //判断图片的类型
         imgData: {
           accept: 'image/gif, image/jpeg, image/png, image/jpg',
-        }
+        },
+        menuPath:'1'
       }
     },
     mounted(){
@@ -94,6 +117,7 @@
       queryUserInfo(){
         queryUserInfo().then(res=>{
           if (res.code === 200) {
+            console.log(res.data[0]);
             this.form = res.data[0]
           } else {
             this.$message.error(res.message)
@@ -103,10 +127,9 @@
         })
       },
       handleSelect(key, keyPath) {
-        console.log(key, keyPath);
+        this.menuPath = key
       },
       onSubmit() {
-        console.log(this.form);
         updateUser(this.form).then(res=>{
           if (res.code === 200) {
             setUser(this.form);
@@ -132,7 +155,6 @@
           alert('请选择3M以内的图片！');
           return false;
         }
-        var uri = ''
         let formdata = new FormData();
         formdata.append('image', img);
         upload(formdata).then(res => {
@@ -152,6 +174,36 @@
       },
       uploadImg() {
         this.$refs.avatarInput.dispatchEvent(new MouseEvent('click'));
+      },
+      changePass(){
+        let passFrom = this.passwordForm
+        if (isEmpty(passFrom.prePass)){
+          this.$message.warning("请输入旧密码");
+          return
+        }
+        if (isEmpty(passFrom.newPass)){
+          this.$message.warning("请输入新密码");
+          return
+        }
+        if (isEmpty(passFrom.rePass)){
+          this.$message.warning("请确认密码");
+          return
+        }
+        if (passFrom.newPass !== passFrom.rePass) {
+          this.$message.warning("两次密码不一致");
+          return
+        }
+        console.log(passFrom);
+        changePass(passFrom).then(res=>{
+          if (res.code === 200){
+            this.$message.success(res.message)
+            this.$router.push("/login")
+          }else {
+            this.$message.warning(res.message)
+          }
+        }).catch(err=>{
+          console.log(err);
+        })
       }
     }
 
@@ -160,7 +212,7 @@
 
 <style scoped>
   .main-box {
-    width: 80%;
+    width: 1000px;
   }
 
   .from-box {

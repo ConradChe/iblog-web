@@ -7,3 +7,11 @@ export function isPoneAvailable(poneInput) {
     return true;
   }
 }
+
+export function isEmpty(val) {
+  if (val == null || val.length === 0){
+    return true;
+  } else {
+    return false;
+  }
+}

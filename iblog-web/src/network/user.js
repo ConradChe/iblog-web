@@ -16,3 +16,14 @@ export function queryUserInfo() {
     url: '/user/queryUserInfo'
   })
 }
+
+export function changePass(data) {
+  return request({
+    url: '/user/changePass',
+    method: 'post',
+    headers:{
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    data:JSON.stringify(data)
+  })
+}

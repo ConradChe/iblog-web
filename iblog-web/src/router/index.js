@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from '@/store'
 
 // 懒加载
 const Login = () => import('@/views/Login')
 const Register = () => import('@/views/Register')
+const Home = () => import('@/views/Home')
 const Index = () => import('@/views/home/Index')
 const MyFollow = () => import('@/views/myfollow/MyFollow')
 const BlogManage = () => import('@/views/blogmanage/BlogManage')
@@ -21,7 +21,38 @@ const routes = [
   {
     path: '/home',
     // 指定的组件
-    component: Index
+    component: Home,
+    children:[
+      {
+        path: '/',
+        redirect: '/index'
+      },
+      {
+        path: '/index',
+        component: Index
+      },
+      {
+        path: '/myfollow',
+        component: MyFollow
+      },
+      {
+        path: '/myfollow',
+        component: MyFollow
+      },
+      {
+        path: '/blogmanage',
+        component: BlogManage
+      },
+      {
+        name: 'article',
+        path: '/article',
+        component: ArticleInfo
+      },
+      {
+        path: '/settings',
+        component: Settings
+      }
+    ]
   },
   {
     path: '/login',
@@ -33,42 +64,14 @@ const routes = [
     component: Register
   },
   {
-    path: '/myfollow',
-    component: MyFollow
-  },
-  {
-    path: '/blogmanage',
-    component: BlogManage
-  },
-  {
     path: '/write',
     component: BlogWrite
-  },
-  {
-    name: 'article',
-    path: '/article',
-    component: ArticleInfo
-  },
-  {
-    path: '/settings',
-    component: Settings
   }
+
 ]
 const router = new VueRouter({
   routes,
   // url模式
   mode: 'history'
 })
-
-router.beforeEach((to, from, next) => {
-  let path = to.path
-  if (path === '/login' || path === '/register' || path === '/write' || path === '/article') {
-    store.state.baseShow = false
-  } else {
-    store.state.baseShow = true
-  }
-  store.state.activeIndex = path
-  next()
-})
-
 export default router

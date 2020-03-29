@@ -52,9 +52,11 @@ export function request(config) {
           message: '请先登录'
         })
         router.push('/login')
+      }else {
+        return data;
       }
     } else {
-      return response.data;
+      return data;
     }
 
   }, err => {

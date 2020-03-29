@@ -10,7 +10,7 @@
       <el-col :span="16" :offset="0">
         <el-menu router :default-active="activeIndex" mode="horizontal"
                  active-text-color="#5FB878">
-          <el-menu-item index="/home">首页</el-menu-item>
+          <el-menu-item index="/">首页</el-menu-item>
           <el-menu-item index="/myfollow">我的关注</el-menu-item>
           <el-menu-item index="/blogmanage">文章管理</el-menu-item>
           <el-col :span="2" :offset="1">
@@ -40,7 +40,7 @@
             </el-menu-item>
           </template>
           <template v-else>
-            <el-submenu index>
+            <el-submenu index="">
               <template slot="title">
                 <img class="me-header-picture" :src="user.headImg"/>
               </template>

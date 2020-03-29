@@ -7,9 +7,11 @@
           <div class="me-view-content">
             <markdown-editor :blog="blog"></markdown-editor>
           </div>
+          <div>
+            评论
+          </div>
         </div>
       </el-main>
-
     </el-container>
   </div>
 </template>
@@ -20,45 +22,36 @@
 
   export default {
     name: "ArticleInfo",
-    components:{
+    components: {
       MarkdownEditor
     },
     data() {
       return {
         blog: {
-          title:'',
+          title: '',
           content: '',
           toolbarsFlag: false,
           subfield: false,
           defaultOpen: 'preview'
         },
-        blogParam:{
-          blogId:this.$route.query.blogId
+        blogParam: {
+          blogId: this.$route.query.blogId
         }
 
       }
     },
     mounted() {
-      this.getBlogInfo();
+      let blog = this.$route.query.blog
+      this.blog.title = blog.title
+      this.blog.content = blog.content
     },
-    methods: {
-      getBlogInfo() {
-        findBlog(this.blogParam).then(res => {
-          if (res.code === 200) {
-            this.blog.title = res.data[0].title;
-            this.blog.content = res.data[0].content;
-          } else {
-            this.$message.error(res.message);
-          }
-        })
-      }
-    }
+    methods: {}
   }
 </script>
 
 <style scoped>
   .me-view-body {
-    margin: 20px auto 140px;
+    margin: 30px auto 140px;
   }
 
   .me-view-container {

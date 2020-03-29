@@ -2,11 +2,11 @@
   <div id="home">
     <el-container>
 
-      <nav-menu :activeIndex="$store.state.activeIndex" v-show="$store.state.baseShow"></nav-menu>
+      <nav-menu :activeIndex="$store.state.activeIndex"/>
 
       <router-view class="me-container"/>
 
-      <base-footer v-show="$store.state.baseShow"></base-footer>
+      <base-footer/>
 
     </el-container>
 

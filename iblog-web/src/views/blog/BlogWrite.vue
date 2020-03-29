@@ -3,6 +3,11 @@
     <el-container>
       <el-header class="me-write">
         <el-col :span="4" :offset="4">
+          <div>
+            <img class="logo" src="@/assets/image/logo.png"/>
+          </div>
+        </el-col>
+        <el-col :span="4" :offset="12">
           <div class="me-write-info">写文章</div>
         </el-col>
         <el-col :span="4" :offset="2">
@@ -49,9 +54,9 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="文章标签" prop="tagList">
-            <el-checkbox-group v-model="articleForm.tagList">
-              <el-checkbox v-for="t in tagList" :key="t.tagId" :label="t" name="tagList">{{t.tagName}}</el-checkbox>
+          <el-form-item label="文章标签" prop="tagIds">
+            <el-checkbox-group v-model="articleForm.tagIds" :max="3">
+              <el-checkbox v-for="t in tagList" :key="t.tagId" :label="t.tagId">{{t.tagName}}</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
 
@@ -75,7 +80,7 @@
   import MarkdownEditor from '@/components/content/markdown/MarkdownEditor'
   import {getCategory} from '@/network/category'
   import {getTags} from '@/network/tag'
-  import {addBlog} from '@/network/blog'
+  import {addBlog, updateBlog} from '@/network/blog'
 
   export default {
     name: 'BlogWrite',
@@ -95,9 +100,10 @@
           categoryId: '',
           categoryName: '',
           summary: '',
-          tagList: [],
+          tagIds: [],
           isHide: '1'
         },
+        isUpdate: false,
         rules: {
           summary: [
             {required: true, message: '请输入摘要', trigger: 'blur'},
@@ -106,7 +112,7 @@
           category: [
             {required: true, message: '请选择文章分类', trigger: 'change'}
           ],
-          tagList: [
+          tagIds: [
             {type: 'array', required: true, message: '请选择标签', trigger: 'change'}
           ]
         }
@@ -114,6 +120,20 @@
     },
     mounted() {
       this.getCategoryAndTags();
+      let blog = this.$route.query.blog
+      if (blog) {
+        this.isUpdate = true
+        this.articleForm = blog
+        let tagIds = blog.tagList.map(tag => {
+          return tag.tagId
+        })
+        let category = {}
+        category.categoryId = blog.categoryId
+        category.categoryName = blog.categoryName
+        this.articleForm.category = category
+        this.articleForm.isHide = blog.isHide + ''
+        this.articleForm.tagIds = tagIds
+      }
     },
     methods: {
       publish(articleForm) {
@@ -125,22 +145,34 @@
             if (typeof (category) == "object") {
               articleForm.categoryId = category.categoryId;
               articleForm.categoryName = category.categoryName;
-            }else {
+            } else {
               articleForm.categoryId = '';
               articleForm.categoryName = category;
             }
-            addBlog(articleForm).then(res =>{
-              if (res.code === 200){
-                that.$message.success(res.message);
-                setTimeout(()=>{
+            if (that.isUpdate) {
+              updateBlog(articleForm).then(res => {
+                if (res.code === 200) {
+                  that.$message.success(res.message);
+                  that.$router.go(-1)
+                } else {
+                  that.$message.error(res.message);
+                }
+              }).catch(err => {
+                console.log(err);
+              })
+            } else {
+              addBlog(articleForm).then(res => {
+                if (res.code === 200) {
+                  that.$message.success(res.message);
                   that.$router.push('/')
-                },1000)
-              } else {
-                that.$message.error(res.message);
-              }
-            }).catch(err =>{
-              console.log(err);
-            })
+                } else {
+                  that.$message.error(res.message);
+                }
+              }).catch(err => {
+                console.log(err);
+              })
+            }
+
           } else {
             return false;
           }
@@ -218,6 +250,12 @@
     font-size: 18px;
     font-weight: 600;
     color: burlywood;
+  }
+
+  .logo {
+    position: absolute;
+    height: 100%;
+    line-height: 60px;
   }
 
   .me-write-btn {
