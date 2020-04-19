@@ -11,7 +11,7 @@
         <el-menu router :default-active="activeIndex" mode="horizontal"
                  active-text-color="#5FB878">
           <el-menu-item index="/">首页</el-menu-item>
-          <el-menu-item index="/myfollow">我的关注</el-menu-item>
+          <!--<el-menu-item index="/myfollow">我的关注</el-menu-item>-->
           <el-menu-item index="/blogmanage">文章管理</el-menu-item>
           <el-col :span="2" :offset="1">
             <el-menu-item index="/write"><i class="el-icon-edit"></i>写文章</el-menu-item>
@@ -56,7 +56,6 @@
 
 <script>
   import {getUser,removeUser,removeToken} from '@/request/token'
-
   import {logout} from '@/network/login'
 
   export default {
@@ -77,7 +76,8 @@
     },
     methods: {
       searchBlog() {
-        console.log(this.input);
+        let keyword = this.input;
+        this.$router.push({path:"/index",query:{keyword:keyword}})
       },
       logout() {
         let user = getUser();

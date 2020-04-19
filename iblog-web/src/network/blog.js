@@ -56,3 +56,11 @@ export function deleteBlog(params) {
     params
   })
 }
+
+export function setBlogView(params) {
+  return request({
+    url: '/blog/setBlogView',
+    method: 'get',
+    params
+  })
+}

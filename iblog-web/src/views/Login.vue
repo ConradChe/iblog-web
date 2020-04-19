@@ -9,7 +9,7 @@
 
       <el-form ref="userForm" :model="userForm" :rules="rules">
         <el-form-item prop="phone">
-          <el-input placeholder="手机号" v-model="userForm.phone"></el-input>
+          <el-input placeholder="手机号" v-model="userForm.phone" maxlength="11"></el-input>
         </el-form-item>
 
         <el-form-item prop="password">

@@ -11,6 +11,7 @@ const BlogManage = () => import('@/views/blogmanage/BlogManage')
 const BlogWrite = () => import('@/views/blog/BlogWrite')
 const ArticleInfo = () => import('@/views/home/article/ArticleInfo')
 const Settings = () => import('@/views/setting/Settings')
+const NavBar = () => import('@/components/common/navmenu/NavBar')
 
 Vue.use(VueRouter)
 const routes = [
@@ -66,6 +67,10 @@ const routes = [
   {
     path: '/write',
     component: BlogWrite
+  },
+  {
+    path: '/navbar',
+    component: NavBar
   }
 
 ]

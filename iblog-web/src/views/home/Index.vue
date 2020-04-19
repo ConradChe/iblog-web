@@ -41,11 +41,16 @@
         total:0,
         searchParam:{
           page:1,
-          limit:5
+          limit:5,
+          keyword:''
         }
       }
     },
     mounted(){
+      let keyword = this.$route.query.keyword;
+      if (keyword){
+        this.searchParam.keyword = keyword;
+      }
       this.getBlog(this.searchParam);
     },
     methods:{

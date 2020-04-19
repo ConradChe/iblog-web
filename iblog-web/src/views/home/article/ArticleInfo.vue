@@ -2,13 +2,77 @@
   <div class="me-view-body">
     <el-container class="me-view-container">
       <el-main>
+        <!--<div class="user-box" v-if="user">-->
+          <!--<div>-->
+            <!--<img :src="user.headImg!==null?user.headImg:defaultImg" class="user_img">-->
+            <!--<span>{{user.nickname}}</span>-->
+            <!--<el-button type="primary" round size="mini" style="float: right">关注</el-button>-->
+          <!--</div>-->
+        <!--</div>-->
         <div class="me-view-card">
           <h2 class="me-view-title">{{blog.title}}</h2>
           <div class="me-view-content">
             <markdown-editor :blog="blog"></markdown-editor>
           </div>
-          <div>
-            评论
+        </div>
+        <div style="display:flex;margin-top: 10px;">
+          <el-input
+            type="textarea"
+            placeholder="评论内容"
+            v-model="comment" style="width: 80%;" resize="none" maxlength="200" show-word-limit="">
+          </el-input>
+          <el-button type="primary" size="mini" style="margin: 5px 20px;height: 30px" @click="commentOperate">评论
+          </el-button>
+        </div>
+        <!--全部评论内容-->
+        <div style="margin-top: 10px;">
+          <div v-for="item in commentList">
+            <div @mouseenter="enter(item.commentId)" @mouseleave="leave()">
+              <img :src="item.user!==null?item.user.headImg:defaultImg" class="user_img">
+              <strong>{{item.user.nickname}}</strong>
+              <span style="margin-left: 20px;color: darkgray;font-size: 10px">{{item.createTime}}</span>
+              <span style="float: right;color: #3759d3;cursor:pointer;"
+                    @click="reply(item.commentId)" v-if="applyId==item.commentId">回复</span>
+              <div style="color: #6d6d6d;margin: 10px 30px">
+                {{item.commentText}}
+              </div>
+            </div>
+            <div v-if="commentId==item.commentId" style="display:flex;margin: 10px;">
+              <el-input
+                type="textarea"
+                :placeholder="'回复'+item.user.nickname"
+                v-model="applyText" style="width: 80%;" resize="none" maxlength="200" show-word-limit="">
+              </el-input>
+              <el-button type="primary" size="mini" style="margin: 5px 20px;height: 30px" @click="doApply(item.commentId,item.user.userId)">回复
+              </el-button>
+            </div>
+            <!--子评论内容-->
+            <div style="margin-left: 20px">
+              <div v-for="i in item.childrenList">
+                <div @mouseenter="enter(i.commentId)" @mouseleave="leave()">
+                  <img :src="i.user!==null?i.user.headImg:defaultImg" class="user_img">
+                  <strong>{{i.user.nickname}}</strong>
+                  <span style="padding: 0 10px;color: #6d6d6d;">回复</span>
+                  <img :src="i.byUser!==null?i.byUser.headImg:defaultImg" class="user_img">
+                  <strong>{{i.byUser.nickname}}</strong>
+                  <span style="margin-left: 20px;color: darkgray;font-size: 10px">{{i.createTime}}</span>
+                  <span style="float: right;color: #3759d3;cursor:pointer;"
+                        @click="reply(i.commentId)" v-if="applyId==i.commentId">回复</span>
+                  <div style="color: #6d6d6d;margin: 10px 30px">
+                    {{i.commentText}}
+                  </div>
+                </div>
+                <div v-if="commentId==i.commentId" style="display:flex;margin: 10px;">
+                  <el-input
+                    type="textarea"
+                    :placeholder="'回复'+i.user.nickname"
+                    v-model="applyText" style="width: 80%;" resize="none" maxlength="200" show-word-limit="">
+                  </el-input>
+                  <el-button type="primary" size="mini" style="margin: 5px 20px;height: 30px" @click="doApply(item.commentId,i.user.userId)">回复
+                  </el-button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </el-main>
@@ -18,7 +82,9 @@
 
 <script>
   import MarkdownEditor from '@/components/content/markdown/MarkdownEditor'
-  import {findBlog} from '@/network/blog'
+  import {setBlogView} from '@/network/blog'
+  import {insertComment, queryComment} from '@/network/comment'
+  import defaultImg from '@/assets/image/head_img.png'
 
   export default {
     name: "ArticleInfo",
@@ -30,22 +96,130 @@
         blog: {
           title: '',
           content: '',
+          blogId: '',
           toolbarsFlag: false,
           subfield: false,
           defaultOpen: 'preview'
         },
-        blogParam: {
-          blogId: this.$route.query.blogId
-        }
-
+        user: {
+          headImg: '',
+          nickname: ''
+        },
+        defaultImg: defaultImg,
+        comment: '',
+        applyText:'',
+        commentId:'',
+        applyId:'',
+        commentList: [
+          {
+            commentText: '这是一段评论',
+            likeNum: 5,
+            createTime: '2020-01-01',
+            user: {
+              headImg: '',
+              nickname: 'che'
+            },
+            childrenList: [
+              {
+                commentText: '这是一条之评论',
+                createTime: '2020-03-04',
+                user: {
+                  headImg: '',
+                  nickname: 'che'
+                },
+                byUser:{
+                  headImg: '',
+                  nickname: 'che'
+                }
+              }
+            ]
+          }
+        ]
       }
     },
     mounted() {
       let blog = this.$route.query.blog
+      this.user = blog.user
       this.blog.title = blog.title
       this.blog.content = blog.content
+      this.blog.blogId = blog.blogId
+      let param = {}
+      param.blogId = blog.blogId
+      this.setView(param);
+      this.queryComment();
     },
-    methods: {}
+    methods: {
+      setView(param) {
+        setBlogView(param).then(res => {
+          if (res.code === 200) {
+            console.log('success');
+          } else {
+            this.$message.error(res.message);
+          }
+        })
+      },
+      commentOperate() {
+        if (this.comment.length === 0) {
+          this.$message.warning("评论不可为空");
+          return;
+        }
+        let param = {}
+        param.blogId = this.blog.blogId
+        param.commentText = this.comment
+        insertComment(param).then(res => {
+          if (res.code === 200) {
+            this.comment = ''
+            this.queryComment()
+            this.$message.success(res.message)
+          } else {
+            this.$message.error(res.message)
+          }
+        })
+      },
+      queryComment() {
+        let param = {}
+        param.blogId = this.blog.blogId
+        queryComment(param).then(res => {
+          if (res.code === 200) {
+            console.log(res.data);
+            this.commentList = res.data;
+          } else {
+            this.$message.error(res.message);
+          }
+        })
+      },
+      reply(commentId) {
+        this.applyText = ''
+        this.commentId = commentId;
+      },
+      doApply(commentId, userId){
+        if (this.applyText.length === 0){
+          this.$message.warning("回复内容不可为空");
+          return
+        }
+        let param = {}
+        param.blogId = this.blog.blogId
+        param.commentText = this.applyText
+        param.parentId = commentId
+        param.byId = userId
+        insertComment(param).then(res => {
+          if (res.code === 200) {
+            this.applyText = ''
+            this.commentId = ''
+            this.queryComment()
+            this.$message.success(res.message)
+          } else {
+            this.$message.error(res.message)
+          }
+        })
+      },
+      enter(commentId){
+        this.applyId = commentId
+      },
+      leave(){
+        this.applyId = ''
+      }
+    }
   }
 </script>
 
@@ -148,5 +322,21 @@
     background: #fff !important;
   }
 
+  .user-box {
+    position: absolute;
+    left: 20px;
+    top: 80px;
+    width: 200px;
+    height: 100px;
+    padding: 10px;
+  }
+
+  .user_img {
+    position: relative;
+    display: inline-block;
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+  }
 
 </style>
