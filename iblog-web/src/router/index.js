@@ -5,13 +5,15 @@ import VueRouter from 'vue-router'
 const Login = () => import('@/views/Login')
 const Register = () => import('@/views/Register')
 const Home = () => import('@/views/Home')
+const AdminHome = () => import('@/views/AdminHome')
 const Index = () => import('@/views/home/Index')
 const MyFollow = () => import('@/views/myfollow/MyFollow')
 const BlogManage = () => import('@/views/blogmanage/BlogManage')
 const BlogWrite = () => import('@/views/blog/BlogWrite')
 const ArticleInfo = () => import('@/views/home/article/ArticleInfo')
 const Settings = () => import('@/views/setting/Settings')
-const NavBar = () => import('@/components/common/navmenu/NavBar')
+const Check = () => import('@/views/admin/Check')
+const AdminArticle = () => import('@/views/admin/ArticleInfo')
 
 Vue.use(VueRouter)
 const routes = [
@@ -37,10 +39,6 @@ const routes = [
         component: MyFollow
       },
       {
-        path: '/myfollow',
-        component: MyFollow
-      },
-      {
         path: '/blogmanage',
         component: BlogManage
       },
@@ -56,6 +54,25 @@ const routes = [
     ]
   },
   {
+    path: '/admin',
+    // 指定的组件
+    component: AdminHome,
+    children:[
+      {
+        path: '/',
+        redirect: '/check/0'
+      },
+      {
+        path: '/check/:id',
+        component: Check
+      },
+      {
+        path:'/adminarticle',
+        component:AdminArticle
+      }
+    ]
+  },
+  {
     path: '/login',
     // 指定的组件
     component: Login
@@ -67,10 +84,6 @@ const routes = [
   {
     path: '/write',
     component: BlogWrite
-  },
-  {
-    path: '/navbar',
-    component: NavBar
   }
 
 ]

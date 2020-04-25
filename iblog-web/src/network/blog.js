@@ -64,3 +64,30 @@ export function setBlogView(params) {
     params
   })
 }
+
+export function queryBlogByStatus(params) {
+  return request({
+    url: '/blog/queryBlogByStatus',
+    method: 'get',
+    params
+  })
+}
+
+export function queryBlogInfo(params) {
+  return request({
+    url: '/blog/queryBlogInfo',
+    method: 'get',
+    params
+  })
+}
+
+export function updateBlogStatus(data) {
+  return request({
+    url: '/blog/updateBlogStatus',
+    method: 'post',
+    headers:{
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    data:JSON.stringify(data)
+  })
+}

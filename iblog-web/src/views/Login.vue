@@ -75,9 +75,14 @@
                 //保存token
                 let data = res.data[0];
                 setToken(data)
+                let user = data.user
                 this.$store.state.user = getUser();
                 //跳转到首页
-                this.$router.push('/')
+                if (user.role===1){
+                  this.$router.push('/admin')
+                } else {
+                  this.$router.push('/')
+                }
               } else {
                 this.$message.error(res.message);
               }

@@ -52,6 +52,13 @@ export function request(config) {
           message: '请先登录'
         })
         router.push('/login')
+      }else if (code === 5002){
+        Message({
+          type: 'warning',
+          showClose: true,
+          message: '您没有管理员权限'
+        })
+        router.push('/')
       }else {
         return data;
       }
