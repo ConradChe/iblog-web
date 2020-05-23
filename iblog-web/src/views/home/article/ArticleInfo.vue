@@ -3,11 +3,11 @@
     <el-container class="me-view-container">
       <el-main>
         <!--<div class="user-box" v-if="user">-->
-          <!--<div>-->
-            <!--<img :src="user.headImg!==null?user.headImg:defaultImg" class="user_img">-->
-            <!--<span>{{user.nickname}}</span>-->
-            <!--<el-button type="primary" round size="mini" style="float: right">关注</el-button>-->
-          <!--</div>-->
+        <!--<div>-->
+        <!--<img :src="user.headImg!==null?user.headImg:defaultImg" class="user_img">-->
+        <!--<span>{{user.nickname}}</span>-->
+        <!--<el-button type="primary" round size="mini" style="float: right">关注</el-button>-->
+        <!--</div>-->
         <!--</div>-->
         <div class="me-view-card">
           <h2 class="me-view-title">{{blog.title}}</h2>
@@ -15,7 +15,22 @@
             <markdown-editor :blog="blog"></markdown-editor>
           </div>
         </div>
-        <div style="display:flex;margin-top: 10px;">
+        <div style="display: flex;margin-top: 10px" class="upOperation">
+          <div @click="doUpvote">
+            <span>
+              <i class="el-icon-thumb" v-if="!islike"></i>
+              <i class="el-icon-thumb" style="color: red" v-else></i>
+            </span>
+            <span>{{islike?'已赞':'点赞'}}</span>
+            <span>{{upvoteNum}}</span>
+          </div>
+          <div style="margin-left: 15px" @click="isShowComment">
+            <span><i class="el-icon-chat-dot-square"></i></span>
+            <span>评论</span>
+            <span>{{commentNum}}</span>
+          </div>
+        </div>
+        <div style="display:flex;margin-top: 10px;" v-if="showComment">
           <el-input
             type="textarea"
             placeholder="评论内容"
@@ -43,7 +58,8 @@
                 :placeholder="'回复'+item.user.nickname"
                 v-model="applyText" style="width: 80%;" resize="none" maxlength="200" show-word-limit="">
               </el-input>
-              <el-button type="primary" size="mini" style="margin: 5px 20px;height: 30px" @click="doApply(item.commentId,item.user.userId)">回复
+              <el-button type="primary" size="mini" style="margin: 5px 20px;height: 30px"
+                         @click="doApply(item.commentId,item.user.userId)">回复
               </el-button>
             </div>
             <!--子评论内容-->
@@ -68,7 +84,8 @@
                     :placeholder="'回复'+i.user.nickname"
                     v-model="applyText" style="width: 80%;" resize="none" maxlength="200" show-word-limit="">
                   </el-input>
-                  <el-button type="primary" size="mini" style="margin: 5px 20px;height: 30px" @click="doApply(item.commentId,i.user.userId)">回复
+                  <el-button type="primary" size="mini" style="margin: 5px 20px;height: 30px"
+                             @click="doApply(item.commentId,i.user.userId)">回复
                   </el-button>
                 </div>
               </div>
@@ -83,7 +100,9 @@
 <script>
   import MarkdownEditor from '@/components/content/markdown/MarkdownEditor'
   import {setBlogView} from '@/network/blog'
+  import {selectUpvoteCountById,selectUpvoteById,doUpvote,cancleUpvote} from '@/network/upvote'
   import {insertComment, queryComment} from '@/network/comment'
+  import {getUser} from '@/request/token'
   import defaultImg from '@/assets/image/head_img.png'
 
   export default {
@@ -107,34 +126,15 @@
         },
         defaultImg: defaultImg,
         comment: '',
-        applyText:'',
-        commentId:'',
-        applyId:'',
-        commentList: [
-          {
-            commentText: '这是一段评论',
-            likeNum: 5,
-            createTime: '2020-01-01',
-            user: {
-              headImg: '',
-              nickname: 'che'
-            },
-            childrenList: [
-              {
-                commentText: '这是一条之评论',
-                createTime: '2020-03-04',
-                user: {
-                  headImg: '',
-                  nickname: 'che'
-                },
-                byUser:{
-                  headImg: '',
-                  nickname: 'che'
-                }
-              }
-            ]
-          }
-        ]
+        applyText: '',
+        commentId: '',
+        applyId: '',
+        upvoteNum:0,
+        commentNum:0,
+        showComment:false,
+        islogin:false,
+        islike:false,
+        commentList: []
       }
     },
     mounted() {
@@ -143,10 +143,13 @@
       this.blog.title = blog.title
       this.blog.content = blog.content
       this.blog.blogId = blog.blogId
+      this.commentNum = blog.commentNum
       let param = {}
       param.blogId = blog.blogId
       this.setView(param);
       this.queryComment();
+      this.getUpvoteNum();
+      this.isLogin();
     },
     methods: {
       setView(param) {
@@ -170,6 +173,7 @@
           if (res.code === 200) {
             this.comment = ''
             this.queryComment()
+            this.commentNum++;
             this.$message.success(res.message)
           } else {
             this.$message.error(res.message)
@@ -192,8 +196,8 @@
         this.applyText = ''
         this.commentId = commentId;
       },
-      doApply(commentId, userId){
-        if (this.applyText.length === 0){
+      doApply(commentId, userId) {
+        if (this.applyText.length === 0) {
           this.$message.warning("回复内容不可为空");
           return
         }
@@ -206,6 +210,7 @@
           if (res.code === 200) {
             this.applyText = ''
             this.commentId = ''
+            this.commentNum++;
             this.queryComment()
             this.$message.success(res.message)
           } else {
@@ -213,11 +218,62 @@
           }
         })
       },
-      enter(commentId){
+      enter(commentId) {
         this.applyId = commentId
       },
-      leave(){
+      leave() {
         this.applyId = ''
+      },
+      isShowComment(){
+        this.showComment = true
+      },
+      //获取点赞数
+      getUpvoteNum(){
+        let param = {}
+        param.blogId = this.blog.blogId
+        selectUpvoteCountById(param).then(res=>{
+          if (res.code === 200){
+            this.upvoteNum = res.data[0].upvoteNum
+          }
+        })
+      },
+      isLogin(){
+        if (getUser()){
+          this.islogin = true;
+          let param = {}
+          param.blogId = this.blog.blogId
+          selectUpvoteById(param).then(res=>{
+            if (res.code===200){
+              if (res.data[0]){
+                this.islike = true;
+              } else {
+                this.islike = false;
+              }
+            }
+          })
+        } else {
+          this.islogin = false;
+        }
+      },
+      doUpvote(){
+        let param = {}
+        param.blogId = this.blog.blogId
+        //已赞则取消点赞
+        if (this.islike){
+          cancleUpvote(param).then(res=>{
+            if (res.code===200){
+              this.islike = !this.islike
+              --this.upvoteNum
+            }
+          })
+        }else {
+          doUpvote(param).then(res=>{
+            if (res.code===200){
+              this.islike = !this.islike
+              ++this.upvoteNum
+            }
+          })
+        }
       }
     }
   }
@@ -337,6 +393,16 @@
     height: 30px;
     width: 30px;
     border-radius: 50%;
+  }
+
+  .upOperation div{
+    height: 40px;
+    line-height: 40px;
+    border: solid 1px #e5e5e5;
+    background-color: #e5e5e5;
+    border-radius: 5px;
+    padding: 0 5px;
+    cursor: pointer;
   }
 
 </style>

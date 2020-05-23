@@ -9,6 +9,7 @@ import './assets/css/style.css'
 Vue.use(ElementUI);
 
 Vue.config.productionTip = false
+// Vue.prototype.HOST = "/"
 
 /* eslint-disable no-new */
 new Vue({

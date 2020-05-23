@@ -45,8 +45,8 @@
                                 style="width: 200px" value-format="yyyy-MM-dd"></el-date-picker>
               </el-form-item>
               <el-form-item label="爱好">
-                <el-input type="textarea" v-model="form.hobby" style="width: 300px;resize: none"
-                          placeholder="请输入爱好"></el-input>
+                <el-input type="textarea" v-model="form.hobby" style="width: 300px;"
+                          placeholder="请输入爱好" resize="none"></el-input>
               </el-form-item>
               <el-form-item label="地址">
                 <el-input v-model="form.address" style="width: 200px" placeholder="请输入省市"></el-input>

@@ -54,7 +54,7 @@
           return callback(new Error('请输入用户名'));
         }
         if (!isPoneAvailable(value)) {
-          return callback(new Error('请输入手机号'));
+          return callback(new Error('手机号格式不正确'));
         }
         return callback();
       };

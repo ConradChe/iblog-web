@@ -44,6 +44,7 @@
             <el-input type="textarea"
                       v-model="articleForm.summary"
                       :rows="6"
+                      resize="none"
                       placeholder="请输入文章摘要">
             </el-input>
           </el-form-item>
@@ -150,6 +151,7 @@
               articleForm.categoryName = category;
             }
             if (that.isUpdate) {
+              articleForm.blogStatus = 0;
               updateBlog(articleForm).then(res => {
                 if (res.code === 200) {
                   that.$message.success(res.message);
