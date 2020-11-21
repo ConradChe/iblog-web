@@ -22,38 +22,53 @@
 
   export default {
     name: "Index",
-    components:{
+    components: {
       ArticleTitle
     },
-    data(){
-      return{
-        blogs:[
+    data() {
+      return {
+        blogs: [
           {
-            title:"这是一个测试标题",
-            summary:"这是一个测试的摘要",
-            likeNum:0,
-            viewNum:0,
-            commentNum:1,
-            user:{},
-            tagList:[]
+            title: "这是一个测试标题",
+            summary: "这是一个测试的摘要",
+            likeNum: 0,
+            viewNum: 0,
+            commentNum: 1,
+            user: {},
+            tagList: []
           }
         ],
-        total:0,
-        searchParam:{
-          page:1,
-          limit:5,
-          keyword:''
+        total: 0,
+        searchParam: {
+          page: 1,
+          limit: 5,
+          keyword: ''
         }
       }
     },
-    mounted(){
+    watch: {
+      $route: {
+        handler: function (val) {
+          let keyword = val.query.keyword
+          let param = {
+            keyword: keyword,
+            page: 1,
+            limit: 5,
+          }
+          this.getBlog(param);
+        },
+        // 深度观察监听
+        deep: true
+      }
+    },
+    mounted() {
       let keyword = this.$route.query.keyword;
-      if (keyword){
+      if (keyword) {
         this.searchParam.keyword = keyword;
       }
       this.getBlog(this.searchParam);
     },
-    methods:{
+    methods: {
       handleSizeChange(val) {
         this.searchParam.limit = val
         this.getBlog(this.searchParam);
@@ -62,15 +77,15 @@
         this.searchParam.page = val
         this.getBlog(this.searchParam);
       },
-      getBlog(param){
-        findBlog(param).then(res=>{
-          if (res.code === 200){
+      getBlog(param) {
+        findBlog(param).then(res => {
+          if (res.code === 200) {
             this.blogs = res.data
             this.total = res.total
-          }else {
+          } else {
             this.$message.error(res.message);
           }
-        }).catch(err=>{
+        }).catch(err => {
           console.log(err);
         })
       }

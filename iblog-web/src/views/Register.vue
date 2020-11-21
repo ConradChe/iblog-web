@@ -12,6 +12,11 @@
           <el-input placeholder="手机号" v-model="userForm.phone" maxlength="11"></el-input>
         </el-form-item>
 
+        <el-form-item prop="code">
+          <el-input placeholder="验证码" v-model="userForm.code" style="width: 150px"></el-input>
+          <el-button type="primary" @click="getPhoneCode" :disabled="isGetCode">{{isGetCode?count+'秒后重新获取':'获取验证码'}}</el-button>
+        </el-form-item>
+
         <el-form-item prop="nickname">
           <el-input placeholder="昵称" v-model="userForm.nickname"></el-input>
         </el-form-item>
@@ -45,6 +50,7 @@
   import {isPoneAvailable} from '@/common/utils'
   import {register} from '@/network/login'
   import {setToken,getUser} from '@/request/token'
+  import {getCode} from '@/network/code'
 
   export default {
     name: 'Register',
@@ -70,10 +76,13 @@
       return {
         userForm: {
           phone: '',
+          code: '',
           nickname: '',
           password: '',
           repass: ''
         },
+        count:60,
+        isGetCode:false,
         rules: {
           phone: [
             {validator: checkPhone, trigger: 'blur'}
@@ -85,6 +94,9 @@
           password: [
             {required: true, message: '请输入密码', trigger: 'blur'},
             {max: 10, message: '不能大于10个字符', trigger: 'blur'}
+          ],
+          code: [
+            {required: true, message: '请输入验证码', trigger: 'blur'}
           ],
           repass: [
             {validator: checkRepass, trigger: 'blur'}
@@ -115,6 +127,31 @@
           }
         });
 
+      },
+      getPhoneCode(){
+        getCode({phone:this.userForm.phone}).then(res=>{
+          if (res.code === 200) {
+            this.$message.success(res.message);
+            this.countdown();
+          } else {
+            this.$message.error(res.message);
+          }
+        }).catch(err=>{
+          this.$message.error(err);
+        });
+      },
+      countdown(){
+        let interval = setInterval(()=>{
+          let count = this.count;
+          if (count>0){
+            this.isGetCode = true
+            this.count--;
+          } else {
+            this.isGetCode = false;
+            this.count = 60
+            clearInterval(interval)
+          }
+        },1000)
       }
 
     }
@@ -142,7 +179,7 @@
   .me-login-box {
     position: absolute;
     width: 300px;
-    height: 360px;
+    height: 450px;
     background-color: white;
     margin-top: 150px;
     margin-left: -180px;

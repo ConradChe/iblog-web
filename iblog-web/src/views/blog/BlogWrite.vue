@@ -166,7 +166,7 @@
               addBlog(articleForm).then(res => {
                 if (res.code === 200) {
                   that.$message.success(res.message);
-                  that.$router.push('/')
+                  that.$router.push('/blogmanage')
                 } else {
                   that.$message.error(res.message);
                 }

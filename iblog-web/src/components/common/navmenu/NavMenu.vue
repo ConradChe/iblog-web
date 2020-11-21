@@ -22,7 +22,8 @@
                 placeholder="搜索文章"
                 v-model="input"
                 suffix-icon="el-icon-search"
-                @change="searchBlog">
+                @change="searchBlog"
+                clearable="">
               </el-input>
             </div>
           </el-col>
@@ -76,6 +77,7 @@
     },
     methods: {
       searchBlog() {
+        console.log(this.input);
         let keyword = this.input;
         this.$router.push({path:"/index",query:{keyword:keyword}})
       },

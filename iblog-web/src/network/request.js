@@ -20,6 +20,7 @@ function endLoading () {
 
 export function request(config) {
   const instance = new axios.create({
+    // baseURL: 'http://192.168.77.128:8081',
     baseURL: 'http://localhost:8081',
     timeout: 5000
   });

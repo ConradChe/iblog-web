@@ -34,7 +34,7 @@
         <div class="interactive">
           <p>
             <span><i class="el-icon-thumb"></i></span>
-            <span>{{item.likeNum}}</span>
+            <span>{{item.likeNum?item.likeNum:0}}</span>
           </p>
           <p>
             <span><i class="el-icon-view"></i></span>
