@@ -4,6 +4,6 @@
     "vuex": "^3.1.2"
   },
   "devDependencies": {
-    "less-loader": "^5.0.0"
+    "less-loader": "^11.1.0"
   }
 }
